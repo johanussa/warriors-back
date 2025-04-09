@@ -4,10 +4,9 @@ FROM maven:3.9.4-eclipse-temurin-17-alpine AS build
 WORKDIR /app
 COPY . .
 
-# Construimos el proyecto (sin tests para que sea más rápido)
-RUN ./mvnw package -DskipTests
+RUN mvn package -DskipTests
 
-# Etapa 2: Imagen liviana solo con lo necesario para correr
+# Etapa 2: Imagen liviana para producción
 FROM eclipse-temurin:17-jdk-alpine AS base
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' \
@@ -18,7 +17,6 @@ LABEL maintainer="sodimac@vc-soft.com"
 
 WORKDIR /deployments
 
-# Copiamos el resultado de la compilación
 COPY --from=build /app/target/quarkus-app/lib/ /deployments/lib/
 COPY --from=build /app/target/quarkus-app/app/ /deployments/app/
 COPY --from=build /app/target/quarkus-app/quarkus/ /deployments/quarkus/
